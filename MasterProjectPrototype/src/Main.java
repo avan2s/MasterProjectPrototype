@@ -1,3 +1,5 @@
+import ilog.concert.*;
+import ilog.cplex.*;
 
 public class Main {
 
@@ -6,4 +8,12 @@ public class Main {
 
 	}
 
+	public static void model1(){
+		try{
+			IloCplex cplex = new IloCplex();
+		}
+		catch(IloException ex){
+			ex.printStackTrace();
+		}
+	}
 }
