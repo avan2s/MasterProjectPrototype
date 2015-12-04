@@ -1,14 +1,65 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import ilog.concert.*;
-import ilog.cplex.*;
+import ilog.concert.IloException;
+import ilog.concert.IloIntVar;
+import ilog.concert.IloLinearIntExpr;
+import ilog.concert.IloLinearNumExpr;
+import ilog.concert.IloNumVar;
+import ilog.concert.IloObjective;
+import ilog.concert.IloRange;
+import ilog.cplex.IloCplex;
+import warehouse.controller.TransportOptimization;
+import warehouse.model.Customer;
+import warehouse.model.Transport;
+import warehouse.model.Warehouse;
 
 public class Main {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Main.exampleFarmer();
+		//Main.exampleFarmer();
+		List<Warehouse> warehouses = new ArrayList<Warehouse>();
+		Warehouse w1 = new Warehouse("W1",70);
+		Warehouse w2 = new Warehouse("W2",50);
+		Warehouse w3 = new Warehouse("W3",50);
+		Warehouse w4 = new Warehouse("W4",50);
+		warehouses.add(w1);
+		warehouses.add(w2);
+		warehouses.add(w3);
+		warehouses.add(w4);
+		
+		List<Customer> customers = new ArrayList<Customer>();
+		Customer c1 = new Customer("C1",30);
+		Customer c2 = new Customer("C2",30);
+		Customer c3 = new Customer("C3",30);
+		Customer c4 = new Customer("C4",30);
+		Customer c5 = new Customer("C5",30);
+		Customer c6 = new Customer("C6",30);
+		customers.add(c1);
+		customers.add(c2);
+		customers.add(c3);
+		customers.add(c4);
+		customers.add(c5);
+		customers.add(c6);
+		
+		List<Transport> possibleTransports = new ArrayList<Transport>();
+		int costs[][] = {{15,35,25,20,30,40},{10,50,35,30,25,45},{20,55,40,20,25,35},{25,40,30,35,20,25}};
+		System.out.println(costs[3][5]);
+		int w_index = 0;
+		int c_index = 0;
+		for(Warehouse w : warehouses){
+			c_index = 0;
+			for(Customer c: customers){
+				Transport t = new Transport(w, c, costs[w_index][c_index]);
+				possibleTransports.add(t);
+				c_index++;
+			}
+			w_index++;
+		}
+		
+		TransportOptimization optimizer = new TransportOptimization(possibleTransports);
+		optimizer.solve();
+		System.out.println("Ende");
 	}
 
 	public static void exampleFarmer(){
@@ -32,6 +83,7 @@ public class Main {
 			// 40x + 30y
 			objective.addTerm(preisGetreide, x);
 			objective.addTerm(preisHafer, y);
+			IloObjective f1 = cplex.getObjective();
 			
 			// Minimierungsproblem
 			cplex.addMaximize(objective);
@@ -40,14 +92,14 @@ public class Main {
 			List<IloRange> constraints = new ArrayList<IloRange>();	
 			
 			// Constraints definieren
-			// x + y >= maximale zu bepflanzende Acker
+			// x + y <= maximale zu bepflanzende Acker
 			IloLinearIntExpr cAcker = cplex.linearIntExpr();
 			cAcker.addTerm(1, x);
 			cAcker.addTerm(1, y);
 			constraints.add(cplex.addLe(cAcker,maxAcker));
 			System.out.println(constraints.get(0));
 			
-			// 2x + y >= maxStunden
+			// 2x + y <= maxStunden
 			IloLinearNumExpr cHours = cplex.linearNumExpr();
 			cHours.addTerm(hourGetreide,x);
 			cHours.addTerm(hourHafer,y);
@@ -65,8 +117,12 @@ public class Main {
 			
 			// solve
 			if(cplex.solve()){
-				System.out.println("Wahrscheinlicher Umsatz = " + cplex.getObjValue());
-				System.out.println("x (Getreide) = " + Math.round(cplex.getValue(x)));
+				IloObjective ff = cplex.getObjective();
+				System.out.println(ff.getExpr());
+				System.out.println(ff.getName());
+				System.out.println(ff);
+				//System.out.println("Wahrscheinlicher Umsatz = " + cplex.getObjValue());
+				//System.out.println("x (Getreide) = " + Math.round(cplex.getValue(x)));
 				System.out.println("y (Hafer) = " + Math.round(cplex.getValue(y)));
 				
 			}
