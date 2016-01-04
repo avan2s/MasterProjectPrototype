@@ -13,9 +13,15 @@ import warehouse.model.Warehouse;
 
 public class TransportOptimization {
 	private List<Transport> possibleTransports;
+	private StringBuilder sb;
+	private String problem;
+	private String solution;
 	
 	public TransportOptimization(List<Transport> possibleTransports){
 		this.possibleTransports = possibleTransports;
+		this.problem = "";
+		this.solution = "";
+		this.sb = new StringBuilder();
 	}
 	
 	public void addPossibleTransport(Transport t){
@@ -25,15 +31,19 @@ public class TransportOptimization {
 		this.possibleTransports.clear();
 	}
 	
-	public void solve(){
+	@SuppressWarnings("finally")
+	public boolean solve(){
+		boolean isSolved = false;
+		this.sb.setLength(0);
 		try{ 
 			IloCplex cplex = new IloCplex();
-			
+			sb.append("Optimization Model:\n");
 			// decision Variables Xij
 			// transport from warehouse i to customer j
 			for(Transport t:this.possibleTransports){
 				String vName = "X"+ t.getFrom().getName()+";"+t.getTo().getName();
 				t.setIloIntVar(cplex.intVar(0, Integer.MAX_VALUE,vName));
+				sb.append("Generate Decsision Variable: ").append(vName).append("\n");
 			}
 			// objective
 			IloLinearIntExpr objective = cplex.linearIntExpr();
@@ -43,7 +53,7 @@ public class TransportOptimization {
 			}
 			
 			// Minimierungsproblem
-			cplex.addMinimize(objective);
+			sb.append("\nGenerate Objective:\n").append(cplex.addMinimize(objective)).append("\n\n");
 		
 			// constraints
 			
@@ -84,37 +94,57 @@ public class TransportOptimization {
 			}
 			// Constraints dem Modell hinzufügen
 			// Constraints: Maximale Anzahl möglicher Lieferungen darf nicht überschritten werden
+			sb.append("Warehouse-Constraints (Maximale Anzahl möglicher Lieferungen darf nicht überschritten werden):\n");
 			for(Map.Entry<Warehouse, IloLinearIntExpr> entry : wh2Ilo.entrySet()){
-				System.out.println(cplex.addLe(entry.getValue(), entry.getKey().getMaxSupplies()));
+				sb.append(cplex.addLe(entry.getValue(), entry.getKey().getMaxSupplies())).append("\n");
 			}
 			// Constraints: Mindestens den Kundenbedarf decken
+			sb.append("\nCustomer-Constraints (Mindestens den Kundenbedarf decken):\n");
 			for(Map.Entry<Customer, IloLinearIntExpr> entry : c2Ilo.entrySet()){
-				System.out.println(cplex.addGe(entry.getValue(), entry.getKey().getDemand()));
+				sb.append(cplex.addGe(entry.getValue(), entry.getKey().getDemand())).append("\n");
 			}
 			
 			//cplex.setParam(IloCplex.IntParam.SimDisplay, 0);
+			this.problem = sb.toString();
+			sb.setLength(0);
 			// solve
+			sb.append("Solution:\n");
 			if(cplex.solve()){
-				int i=1;
 				for(Transport t : this.possibleTransports){
-					System.out.println("(" + i + ")" + t.getFrom().getName() + " -" + cplex.getValue(t.getIloIntVar()) + "-> " + t.getTo().getName());
-					i++;
+					double value = cplex.getValue(t.getIloIntVar());
+					if(value>0)
+						sb.append(t.getFrom().getName() + " -" + value + "-> " + t.getTo().getName()).append("\n");
 				}
-				System.out.println("Kosten (objective) = " + cplex.getObjValue());
-				System.out.println("Kosten (objective) = " + cplex.getBestObjValue());
+				sb.append("Kosten (objective) = " + cplex.getObjValue());
 				IloObjective ff = cplex.getObjective();
-				
+				this.solution = sb.toString();
 				System.out.println(ff.getExpr());
+				isSolved = true;
 			}
 			else{
-				System.out.println("Model not solved");
+				sb.append("Model not solved");
+				this.solution = sb.toString();
 			}
 			cplex.end();
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
 		}
+		finally{
+			sb.setLength(0);
+			return isSolved;
+		}
 		
 	}
+
+	public String getProblem() {
+		return problem;
+	}
+
+	public String getSolution() {
+		return solution;
+	}
+	
+	
 	
 }

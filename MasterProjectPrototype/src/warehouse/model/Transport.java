@@ -12,6 +12,8 @@ public class Transport {
 		this.from = from;
 		this.to = to;
 		this.cost = cost;
+		this.from.addTransport(this);
+		this.to.addTransport(this);
 	}
 
 	public Warehouse getFrom() {
@@ -45,6 +47,5 @@ public class Transport {
 	public void setIloIntVar(IloIntVar iloIntVar) {
 		this.iloIntVar = iloIntVar;
 	}
-	
 	
 }

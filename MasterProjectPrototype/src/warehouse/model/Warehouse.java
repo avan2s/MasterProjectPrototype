@@ -18,9 +18,25 @@ public class Warehouse {
 	}
 	
 	public void addTransport(Transport t){
-		this.transports.add(t);
-		if(!this.customers.contains(t.getFrom()))
+		if(!transports.contains(t))
+			this.transports.add(t);
+		if(!this.customers.contains(t.getTo()))
 			this.customers.add(t.getTo());
+	}
+	
+	public void removeTransport(Transport t){
+		Customer c = t.getTo();
+		boolean removeCustomer = true;
+		if(transports.contains(t))
+			transports.remove(t);
+		for(Transport tD : this.transports){
+			if(tD.getTo().equals(c)){
+				removeCustomer = false;
+				break;
+			}
+		}
+		if(removeCustomer)
+			this.customers.remove(c);
 	}
 	
 	public String getName(){

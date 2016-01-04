@@ -11,14 +11,31 @@ public class Customer {
 	
 	public Customer(String name, int demand){
 		this.warehouses = new ArrayList<Warehouse>();
+		this.transports = new ArrayList<>();
 		this.name = name;
 		this.demand = demand;
 	}
 	
 	public void addTransport(Transport t){
-		this.transports.add(t);
+		if(!this.transports.contains(t))
+			this.transports.add(t);
 		if(!this.warehouses.contains(t.getFrom()))
 			this.warehouses.add(t.getFrom());
+	}
+	
+	public void removeTransport(Transport t){
+		Warehouse w = t.getFrom();
+		boolean removeWarehouse = true;
+		if(this.transports.contains(t))
+			this.transports.remove(t);
+		for(Transport tD : this.transports){
+			if(tD.getFrom().equals(w)){
+				removeWarehouse = false;
+				break;
+			}
+		}
+		if(removeWarehouse)
+			this.warehouses.remove(w);
 	}
 	
 	public String getName(){

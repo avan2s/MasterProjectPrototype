@@ -9,6 +9,8 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloObjective;
 import ilog.concert.IloRange;
 import ilog.cplex.IloCplex;
+import optimization.OfmTrainingOptimization;
+import optimization.Spieler;
 import warehouse.controller.TransportOptimization;
 import warehouse.model.Customer;
 import warehouse.model.Transport;
@@ -17,6 +19,7 @@ import warehouse.model.Warehouse;
 public class Main {
 
 	public static void main(String[] args) {
+		//Main.exampleTrainer();
 		//Main.exampleFarmer();
 		List<Warehouse> warehouses = new ArrayList<Warehouse>();
 		Warehouse w1 = new Warehouse("W1",70);
@@ -177,5 +180,34 @@ public class Main {
 			ex.printStackTrace();
 		}
 		
+	}
+	
+	public static void exampleTrainer(){
+		List<Spieler> spielerliste = new ArrayList<>();
+		Spieler s1 = new Spieler("s1", 20, 60);
+		Spieler s2 = new Spieler("s2", 25, 74);
+		Spieler s3 = new Spieler("s3", 10, 100);
+		Spieler s4 = new Spieler("s4", 17, 21);
+		Spieler s5 = new Spieler("s5", 30, 45);
+		Spieler s6 = new Spieler("s6", 5, 60);
+		Spieler s7 = new Spieler("s7", 40, 74);
+		Spieler s8 = new Spieler("s8", 28, 100);
+		Spieler s9 = new Spieler("s9", 15, 27);
+		Spieler s10 = new Spieler("s10", 27, 90);
+		Spieler s11 = new Spieler("s11", 6, 76);
+		spielerliste.add(s1);
+		spielerliste.add(s2);
+		spielerliste.add(s3);
+		spielerliste.add(s4);
+		spielerliste.add(s5);
+		spielerliste.add(s6);
+		spielerliste.add(s7);
+		spielerliste.add(s8);
+		spielerliste.add(s9);
+		spielerliste.add(s10);
+		spielerliste.add(s11);
+		String[] einheiten = {"e1","e2","e3"};
+		OfmTrainingOptimization trainingOptimizer = new OfmTrainingOptimization(spielerliste,einheiten);
+		trainingOptimizer.createModel();
 	}
 }
